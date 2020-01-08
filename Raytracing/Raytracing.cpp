@@ -70,23 +70,35 @@ public:
 
 class Sphere {
 public:
-	Sphere(const Vector& O, double R) : O(0), R(R) {};
+	Sphere(const Vector& O, double R, const Vector& rho) : O(0), R(R), rho(rho) {};
 
-	double intersect(const Ray& r) {
+	bool intersect(const Ray& r, const double intensiteL, const Vector L, Vector& I) {
 		double a = 1;
 		double b = 2 * dot(r.u, r.C - O);
 		double c = (r.C - O).getNorm2() - R * R;
 
 		double delta = b * b - 4 * a * c;
-		if (delta < 0) return -1;
+		if (delta < 0) return false;
 
-		double t1 = (-b - sqrt(delta)) / (2 * a);
-		double t2 = (-b + sqrt(delta)) / (2 * a);
+		double sqrtDelta = sqrt(delta);
+		double t1 = (-b - sqrtDelta) / (2 * a);
+		double t2 = (-b + sqrtDelta) / (2 * a);
 
-		if (t1 >= 0) return t1;
-		else return t2;
+		if (t2 < 0) return false;
+		double t = t1 < 0 ? t2 : t1;
+
+		Vector P = r.C + t*r.u;
+		Vector N = P - O;
+		N.normalize();
+
+		Vector distanceLP = L - P;
+		distanceLP.normalize();
+		I = intensiteL / M_PI * rho * (std::max(0., dot(N, distanceLP)) / (L-P).getNorm2());
+
+		return true;
 	}
-
+	
+	Vector rho;
 	Vector O;
 	double R;
 };
@@ -96,9 +108,14 @@ int main() {
 	int W = 512;
 	int H = 512;
 
-	Vector O;
-	Sphere s(O, 10);
-	Vector C(0, 0, 55);
+	const Vector O;
+	const Vector rho(0.6, 0.3, 0);
+	Sphere s(O, 10, rho);
+	
+	const Vector C(0, 0, 55);
+
+	const Vector L(-10, 20, 40);
+	const double intensiteL = 1000000;
 
 	double fov = M_PI / 3;
 
@@ -106,15 +123,18 @@ int main() {
 	for (int i = 0; i < H; i++) {
 		for (int j = 0; j < W; j++) {
 
-			Vector u(j - W / 2, i - W / 2, - W / (2 * tan(fov / 2)));
+			Vector u(W / 2 - j, W / 2 - i, - W / (2 * tan(fov / 2)));
 			u = u - C;
 			u.normalize();
 			Ray r(C, u);
+			Vector P, N;
 
-			if (s.intersect(r) >= 0) {
-				image[(i * W + j) * 3 + 0] = 255;
-				image[(i * W + j) * 3 + 1] = 255;
-				image[(i * W + j) * 3 + 2] = 255;
+			Vector I;
+
+			if (s.intersect(r, intensiteL, L, I)) {
+				image[(i * W + j) * 3 + 0] = I[0];
+				image[(i * W + j) * 3 + 1] = I[1];
+				image[(i * W + j) * 3 + 2] = I[2];
 			}
 			else {
 				image[(i * W + j) * 3 + 0] = 0;
