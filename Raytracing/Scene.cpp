@@ -26,7 +26,12 @@ bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 	return has_intersect;
 }
 
-Vector Scene::getColor(const Ray& r, Vector& P, Vector& N, int idx) {
+Vector Scene::getColor(const Ray& r) {
+	Vector P, N;
+	int idx;
+
+	bool has_intersect = intersect(r, P, N, idx);
+
 	Vector PL = light - P;
 	double distlight = PL.getNorm();
 	PL.normalize();
@@ -35,8 +40,8 @@ Vector Scene::getColor(const Ray& r, Vector& P, Vector& N, int idx) {
 	Ray r_prime(P + 1e-12 * N, PL);
 	
 	int idx_prime;
-	bool has_intersect = intersect(r_prime, P_prime, N_prime, idx_prime);
-	if (has_intersect) 
+	bool has_intersect_prime = intersect(r_prime, P_prime, N_prime, idx_prime);
+	if (has_intersect_prime) 
 	{
 		if (distlight < (P - P_prime).getNorm())
 		{

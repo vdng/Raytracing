@@ -16,7 +16,7 @@ public:
 	Scene(std::vector<Sphere*> spheres, Vector Camera, double fov, Vector Light, double intensiteL);
 
 	bool intersect(const Ray& r, Vector& P, Vector& N, int& idx);
-	Vector getColor(const Ray& r, Vector& P, Vector& N, int idx);
+	Vector getColor(const Ray& r);
 
 
 	Sphere operator[](int i) const;

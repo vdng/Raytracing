@@ -4,7 +4,7 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& O, double R, const Vector& rho) : O(O), R(R), rho(rho) {};
+Sphere::Sphere(const Vector& O, double R, const Vector& rho, bool mirror) : O(O), R(R), rho(rho), mirror(mirror) {};
 
 
 double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
@@ -34,4 +34,8 @@ Vector Sphere::intensity(const Ray& r, Vector& P, Vector& N, const Vector& L, co
 	PL.normalize();
 	Vector I = intensiteL / M_PI * rho * (std::max(0., dot(N, PL)) / (L - P).getNorm2());
 	return I;
+}
+
+bool Sphere::is_mirror() {
+	return mirror;
 }

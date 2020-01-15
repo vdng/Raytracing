@@ -46,24 +46,11 @@ int main() {
 			u.normalize();
 			Ray r(C, u);
 
-			Vector P, N;
-			int idx;
+			Vector I = scene.getColor(r);
 
-			bool has_intersect = scene.intersect(r, P, N, idx);
-
-			if (has_intersect) 
-			{
-				Vector I = scene.getColor(r, P, N, idx);
-				image[(i * W + j) * 3 + 0] = std::min(pow(I[0], 0.45), 255.);
-				image[(i * W + j) * 3 + 1] = std::min(pow(I[1], 0.45), 255.);
-				image[(i * W + j) * 3 + 2] = std::min(pow(I[2], 0.45), 255.);
-			}
-			else 
-			{
-				image[(i * W + j) * 3 + 0] = 0;
-				image[(i * W + j) * 3 + 1] = 0;
-				image[(i * W + j) * 3 + 2] = 0;
-			}
+			image[(i * W + j) * 3 + 0] = std::min(pow(I[0], 0.45), 255.);
+			image[(i * W + j) * 3 + 1] = std::min(pow(I[1], 0.45), 255.);
+			image[(i * W + j) * 3 + 2] = std::min(pow(I[2], 0.45), 255.);
 
 		}
 	}

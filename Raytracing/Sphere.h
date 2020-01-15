@@ -7,10 +7,13 @@ class Sphere {
 	Vector rho;
 	Vector O;
 	double R; 
+	bool mirror;
 
 public:
-	Sphere(const Vector& O, double R, const Vector& rho);
+	Sphere(const Vector& O, double R, const Vector& rho, bool mirror = false);
 
 	double intersect(const Ray& r, Vector& P, Vector& N);
 	Vector intensity(const Ray& r, Vector& P, Vector& N, const Vector& L, const double intensiteL);
+
+	bool is_mirror();
 };
