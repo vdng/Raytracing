@@ -26,7 +26,7 @@ bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 	return has_intersect;
 }
 
-Vector Scene::getColor(const Ray& r) {
+Vector Scene::getColor(const Ray& r, int numRebound) {
 	Vector P, N;
 	int idx;
 
@@ -38,19 +38,29 @@ Vector Scene::getColor(const Ray& r) {
 
 	Vector P_prime, N_prime, I;
 	Ray r_prime(P + 1e-12 * N, PL);
-	
+
 	int idx_prime;
 	bool has_intersect_prime = intersect(r_prime, P_prime, N_prime, idx_prime);
-	if (has_intersect_prime) 
+	if (has_intersect)
 	{
-		if (distlight < (P - P_prime).getNorm())
+		if (spheres[idx]->is_mirror() && numRebound > 0)
+		{
+			Vector R = r.u - 2 * dot(r.u, N) * N;
+			Ray rray(P + 1e-10 * N, R);
+			return getColor(rray, numRebound - 1);
+		}
+
+		if (has_intersect_prime)
+		{
+			if (distlight < (P - P_prime).getNorm())
+			{
+				I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+			}
+		}
+		else
 		{
 			I = spheres[idx]->intensity(r, P, N, light, intensiteL);
 		}
-	}
-	else
-	{
-		I = spheres[idx]->intensity(r, P, N, light, intensiteL);
 	}
 	return I;
 }

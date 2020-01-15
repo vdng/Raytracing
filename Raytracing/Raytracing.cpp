@@ -23,7 +23,7 @@ int main() {
 
 	const Vector O;
 	const Vector rho(1., 1., 0.05);
-	Sphere s(O, 10., rho);
+	Sphere s(O, 10., rho, true);
 
 	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
 	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
@@ -31,7 +31,7 @@ int main() {
 	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 0., 1.));
 	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.));
 
-	std::vector<Sphere*> spheres = {&s, &splafond, &smurfond, &ssol};
+	std::vector<Sphere*> spheres = {&s, &splafond, &smurfond, &ssol, &smur1, &smur2};
 	const Vector C(0, 0, 55);  // caméra
 	double fov = M_PI / 3;
 	const Vector L(-10, 20, 40);	// source lumineuse
@@ -46,7 +46,8 @@ int main() {
 			u.normalize();
 			Ray r(C, u);
 
-			Vector I = scene.getColor(r);
+			int numRebound = 5;
+			Vector I = scene.getColor(r, numRebound);
 
 			image[(i * W + j) * 3 + 0] = std::min(pow(I[0], 0.45), 255.);
 			image[(i * W + j) * 3 + 1] = std::min(pow(I[1], 0.45), 255.);
