@@ -6,11 +6,18 @@
 
 class Scene {
 	std::vector<Sphere*> spheres;
+	Vector camera;
+	double fov;
+	Vector light;	// source lumineuse
+	double intensiteL;	// intensité de la source lumineuse
+
 
 public:
-	Scene(std::vector<Sphere*> spheres);
+	Scene(std::vector<Sphere*> spheres, Vector Camera, double fov, Vector Light, double intensiteL);
 
-	int intersect(const Ray& r, Vector& P, Vector& N);
+	bool intersect(const Ray& r, Vector& P, Vector& N, int& idx);
+	Vector getColor(const Ray& r, Vector& P, Vector& N, int idx);
+
 
 	Sphere operator[](int i) const;
 

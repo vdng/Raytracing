@@ -1,10 +1,14 @@
 #include "Scene.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <algorithm>
 
-Scene::Scene(std::vector<Sphere*> spheres) : spheres(spheres) {};
+Scene::Scene(std::vector<Sphere*> spheres, Vector camera, double fov, Vector light, double intensiteL) : 
+	spheres(spheres), camera(camera), fov(fov), light(light), intensiteL(intensiteL) {};
 
-int Scene::intersect(const Ray& r, Vector& P, Vector& N)
+bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 {
-	int idx = -1;	// indice de la sphere la plus proche ; -1 si aucune intersection
+	bool has_intersect = false;	
 	Vector Plocal, Nlocal;
 	double t = std::numeric_limits<double>::max();
 	for (size_t i = 0; i < spheres.size(); i++)
@@ -12,14 +16,40 @@ int Scene::intersect(const Ray& r, Vector& P, Vector& N)
 		double tlocal = spheres[i]->intersect(r, Plocal, Nlocal);
 		if (0 <= tlocal && tlocal < t)
 		{
+			has_intersect = true;
 			idx = i;
 			t = tlocal;
 			P = Plocal;
 			N = Nlocal;
 		}
 	}
-	return idx;
+	return has_intersect;
 }
+
+Vector Scene::getColor(const Ray& r, Vector& P, Vector& N, int idx) {
+	Vector PL = light - P;
+	double distlight = PL.getNorm();
+	PL.normalize();
+
+	Vector P_prime, N_prime, I;
+	Ray r_prime(P + 1e-12 * N, PL);
+	
+	int idx_prime;
+	bool has_intersect = intersect(r_prime, P_prime, N_prime, idx_prime);
+	if (has_intersect) 
+	{
+		if (distlight < (P - P_prime).getNorm())
+		{
+			I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+		}
+	}
+	else
+	{
+		I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+	}
+	return I;
+}
+
 
 Sphere Scene::operator[](int i) const {
 	return *spheres[i];
