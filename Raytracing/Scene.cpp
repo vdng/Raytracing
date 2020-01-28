@@ -3,8 +3,8 @@
 #include <math.h>
 #include <algorithm>
 
-Scene::Scene(std::vector<Sphere*> spheres, Vector camera, double fov, Vector light, double intensiteL) : 
-	spheres(spheres), camera(camera), fov(fov), light(light), intensiteL(intensiteL) {};
+Scene::Scene(std::vector<Sphere*> spheres, Vector camera, double fov, Vector light, double intensiteL, double refractiveIndex) :
+	spheres(spheres), camera(camera), fov(fov), light(light), intensiteL(intensiteL), refractiveIndex(refractiveIndex) {};
 
 bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 {
@@ -41,25 +41,45 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 
 	int idx_prime;
 	bool has_intersect_prime = intersect(r_prime, P_prime, N_prime, idx_prime);
+
 	if (has_intersect)
 	{
 		if (spheres[idx]->is_mirror() && numRebound > 0)
 		{
 			Vector R = r.u - 2 * dot(r.u, N) * N;
-			Ray rray(P + 1e-10 * N, R);
-			return getColor(rray, numRebound - 1);
+			Ray rray(P + 1e-4 * N, R);
+			I = getColor(rray, numRebound - 1);
 		}
 
-		if (has_intersect_prime)
+		else if (spheres[idx]->is_transparent())
 		{
-			if (distlight < (P - P_prime).getNorm())
+			double n1 = refractiveIndex;
+			double n2 = spheres[idx]->get_refractiveIndex();
+			Vector N_transparent(N);
+
+			if (dot(r.u, N) > 0) // Le rayon sort de la sphère
 			{
-				I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+				n1 = n2;
+				n2 = refractiveIndex;
+				N_transparent = -N;
+			}
+
+			double radical = 1. - (n1 / n2) * (n1 / n2) * (1 - dot(r.u, N_transparent) * dot(r.u, N_transparent));
+
+			if (radical > 0)
+			{
+				Vector R = (n1 / n2) * (r.u - dot(r.u, N_transparent) * N_transparent) - sqrt(radical) * N_transparent;
+				Ray rray(P - 1e-4 * N_transparent, R);
+				I = getColor(rray, numRebound);
 			}
 		}
+		
 		else
 		{
-			I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+			if (has_intersect_prime && distlight > (P - P_prime).getNorm())
+				I = Vector(0,0,0);
+			else
+				I = spheres[idx]->intensity(r, P, N, light, intensiteL);
 		}
 	}
 	return I;

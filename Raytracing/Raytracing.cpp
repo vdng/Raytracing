@@ -23,20 +23,23 @@ int main() {
 
 	const Vector O;
 	const Vector rho(1., 1., 0.05);
-	Sphere s(O, 10., rho, true);
+	double refractiveIndex = 1.5;
+	bool is_mirror = false;
+	bool is_transparent = true;
+	Sphere s(O, 10., rho, is_mirror, is_transparent, refractiveIndex);
 
 	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
 	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
 	Sphere ssol(Vector(0., -1000., 0.), 990, Vector(0.1, 0.1, 0.3));
-	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 0., 1.));
+	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.));
 	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.));
 
 	std::vector<Sphere*> spheres = {&s, &splafond, &smurfond, &ssol, &smur1, &smur2};
 	const Vector C(0, 0, 55);  // caméra
 	double fov = M_PI / 3;
 	const Vector L(-10, 20, 40);	// source lumineuse
-	const double intensiteL = 3 * 10e7;	// intensité de la source lumineuse
-	Scene scene(spheres, C, fov, L, intensiteL);
+	const double intensiteL = 3 * 10e8;	// intensité de la source lumineuse
+	Scene scene(spheres, C, fov, L, intensiteL, 1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);
 	for (int i = 0; i < H; i++) {

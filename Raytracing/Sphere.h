@@ -8,12 +8,16 @@ class Sphere {
 	Vector O;
 	double R; 
 	bool mirror;
+	bool transparent;
+	double refractiveIndex;
 
 public:
-	Sphere(const Vector& O, double R, const Vector& rho, bool mirror = false);
+	Sphere(const Vector& O, double R, const Vector& rho, bool mirror = false, bool transparent = false, double refractiveIndex = 1.5);
 
 	double intersect(const Ray& r, Vector& P, Vector& N);
 	Vector intensity(const Ray& r, Vector& P, Vector& N, const Vector& L, const double intensiteL);
 
 	bool is_mirror();
+	bool is_transparent();
+	double get_refractiveIndex();
 };

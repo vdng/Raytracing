@@ -4,7 +4,8 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& O, double R, const Vector& rho, bool mirror) : O(O), R(R), rho(rho), mirror(mirror) {};
+Sphere::Sphere(const Vector& O, double R, const Vector& rho, bool mirror, bool transparent, double n) : 
+	O(O), R(R), rho(rho), mirror(mirror), transparent(transparent), refractiveIndex(n) {};
 
 
 double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
@@ -38,4 +39,13 @@ Vector Sphere::intensity(const Ray& r, Vector& P, Vector& N, const Vector& L, co
 
 bool Sphere::is_mirror() {
 	return mirror;
+}
+
+bool Sphere::is_transparent() {
+	return transparent;
+}
+
+double Sphere::get_refractiveIndex()
+{
+	return refractiveIndex;
 }
