@@ -1,7 +1,9 @@
 #include "Scene.h"
+#include "Vector.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <algorithm>
+#include <random>
 
 Scene::Scene(std::vector<Sphere*> spheres, Vector camera, double fov, Vector light, double intensiteL, double refractiveIndex) :
 	spheres(spheres), camera(camera), fov(fov), light(light), intensiteL(intensiteL), refractiveIndex(refractiveIndex) {};
@@ -27,6 +29,12 @@ bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 }
 
 Vector Scene::getColor(const Ray& r, int numRebound) {
+
+	if (numRebound == 0)
+	{
+		return Vector(0, 0, 0);
+	}
+
 	Vector P, N;
 	int idx;
 
@@ -36,7 +44,7 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 	double distlight = PL.getNorm();
 	PL.normalize();
 
-	Vector P_prime, N_prime, I;
+	Vector P_prime, N_prime, I(0., 0., 0.);
 	Ray r_prime(P + 1e-12 * N, PL);
 
 	int idx_prime;
@@ -44,7 +52,7 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 
 	if (has_intersect)
 	{
-		if (spheres[idx]->is_mirror() && numRebound > 0)
+		if (spheres[idx]->is_mirror())
 		{
 			Vector R = r.u - 2 * dot(r.u, N) * N;
 			Ray rray(P + 1e-4 * N, R);
@@ -69,17 +77,24 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 			if (radical > 0)
 			{
 				Vector R = (n1 / n2) * (r.u - dot(r.u, N_transparent) * N_transparent) - sqrt(radical) * N_transparent;
-				Ray rray(P - 1e-4 * N_transparent, R);
-				I = getColor(rray, numRebound);
+				Ray tray(P - 1e-4 * N_transparent, R);
+				I = getColor(tray, numRebound - 1);
 			}
 		}
 		
-		else
-		{
+		else  // Ni mirroir, ni transparent
+		{	
+			// Contribution de l'éclairage directe
 			if (has_intersect_prime && distlight > (P - P_prime).getNorm())
 				I = Vector(0,0,0);
 			else
 				I = spheres[idx]->intensity(r, P, N, light, intensiteL);
+
+			// Contribution indirecte
+			Vector directionAleatoire = randomCos(N);
+			Ray rayonAleatoire(P + 1e-4 * N, directionAleatoire);
+
+			I += getColor(rayonAleatoire, numRebound - 1) * spheres[idx]->get_albedo();
 		}
 	}
 	return I;

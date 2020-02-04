@@ -20,4 +20,5 @@ public:
 	bool is_mirror();
 	bool is_transparent();
 	double get_refractiveIndex();
+	Vector get_albedo();
 };

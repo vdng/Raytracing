@@ -49,3 +49,8 @@ double Sphere::get_refractiveIndex()
 {
 	return refractiveIndex;
 }
+
+Vector Sphere::get_albedo()
+{
+	return rho;
+}

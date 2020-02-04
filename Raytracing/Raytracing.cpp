@@ -20,6 +20,7 @@
 int main() {
 	int W = 512;
 	int H = 512;
+	int nRays = 50;
 
 	const Vector O;
 	const Vector rho(1., 1., 0.05);
@@ -42,6 +43,8 @@ int main() {
 	Scene scene(spheres, C, fov, L, intensiteL, 1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);
+
+#pragma omp parallel for
 	for (int i = 0; i < H; i++) {
 		for (int j = 0; j < W; j++) {
 
@@ -50,11 +53,15 @@ int main() {
 			Ray r(C, u);
 
 			int numRebound = 5;
-			Vector I = scene.getColor(r, numRebound);
+			Vector color(0., 0., 0.);
+			for (int k = 0; k < nRays; k++)
+			{
+				color += scene.getColor(r, numRebound) / nRays;
+			}
 
-			image[(i * W + j) * 3 + 0] = std::min(pow(I[0], 0.45), 255.);
-			image[(i * W + j) * 3 + 1] = std::min(pow(I[1], 0.45), 255.);
-			image[(i * W + j) * 3 + 2] = std::min(pow(I[2], 0.45), 255.);
+			image[(i * W + j) * 3 + 0] = std::min(pow(color[0], 0.45), 255.);
+			image[(i * W + j) * 3 + 1] = std::min(pow(color[1], 0.45), 255.);
+			image[(i * W + j) * 3 + 2] = std::min(pow(color[2], 0.45), 255.);
 
 		}
 	}
