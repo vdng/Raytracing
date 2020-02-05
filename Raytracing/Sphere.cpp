@@ -30,13 +30,6 @@ double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
 	return t;
 }
 
-Vector Sphere::intensity(const Ray& r, Vector& P, Vector& N, const Vector& L, const double intensiteL) {
-	Vector PL = L - P;
-	PL.normalize();
-	Vector I = intensiteL / M_PI * rho * (std::max(0., dot(N, PL)) / (L - P).getNorm2());
-	return I;
-}
-
 bool Sphere::is_mirror() {
 	return mirror;
 }
@@ -53,4 +46,9 @@ double Sphere::get_refractiveIndex()
 Vector Sphere::get_albedo()
 {
 	return rho;
+}
+
+double Sphere::get_rayon()
+{
+	return R;
 }

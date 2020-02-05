@@ -26,8 +26,10 @@ int main() {
 	const Vector rho(1., 1., 0.05);
 	double refractiveIndex = 1.5;
 	bool is_mirror = false;
-	bool is_transparent = true;
-	Sphere s(O, 10., rho, is_mirror, is_transparent, refractiveIndex);
+	bool is_transparent = false;
+	Sphere s1(O, 10., rho, is_mirror, is_transparent, refractiveIndex);
+
+	Sphere slum(Vector(-10, 20, 40), 2, Vector(1., 1., 1.), false, false);
 
 	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
 	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
@@ -35,12 +37,22 @@ int main() {
 	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.));
 	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.));
 
-	std::vector<Sphere*> spheres = {&s, &splafond, &smurfond, &ssol, &smur1, &smur2};
-	const Vector C(0, 0, 55);  // caméra
-	double fov = M_PI / 3;
-	const Vector L(-10, 20, 40);	// source lumineuse
-	const double intensiteL = 3 * 10e8;	// intensité de la source lumineuse
-	Scene scene(spheres, C, fov, L, intensiteL, 1.);
+	Scene scene;
+	scene.addSphere(slum);
+	scene.addSphere(splafond);
+	scene.addSphere(smurfond);
+	scene.addSphere(ssol);
+	scene.addSphere(smur1);
+	scene.addSphere(smur2);
+	scene.addSphere(s1);
+
+	scene.set_camera(Vector(0., 0., 55.));
+	scene.set_fov(M_PI / 3.);
+
+	scene.set_light(slum);
+	scene.set_intensiteL(3 * 1e9);
+	scene.set_refractiveIndex(1.);
+	//Scene scene(spheres, C, fov, L, intensiteL, 1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);
 
@@ -48,9 +60,9 @@ int main() {
 	for (int i = 0; i < H; i++) {
 		for (int j = 0; j < W; j++) {
 
-			Vector u(j - W / 2., H / 2. - i, - H / (2 * tan(fov / 2)));
+			Vector u(j - W / 2., H / 2. - i, - H / (2 * tan(scene.get_fov() / 2)));
 			u.normalize();
-			Ray r(C, u);
+			Ray r(scene.get_camera(), u);
 
 			int numRebound = 5;
 			Vector color(0., 0., 0.);

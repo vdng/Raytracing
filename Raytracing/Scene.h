@@ -5,21 +5,30 @@
 #include "Sphere.h"
 
 class Scene {
-	std::vector<Sphere*> spheres;
+	std::vector<Sphere> spheres;
 	Vector camera;
 	double fov;
-	Vector light;	// source lumineuse
+	Sphere light;	// source lumineuse
 	double intensiteL;	// intensité de la source lumineuse
 	double refractiveIndex;
 
 public:
-	Scene(std::vector<Sphere*> spheres, Vector Camera, double fov, Vector Light, double intensiteL, double refractiveIndex = 1.);
+	Scene();
 
 	bool intersect(const Ray& r, Vector& P, Vector& N, int& idx);
 	Vector getColor(const Ray& r, int numRebound);
 
+	void set_camera(Vector C);
+	void set_fov(double f);
+	void set_light(Sphere L);
+	void set_intensiteL(double intensite);
+	void set_refractiveIndex(double refraction);
+
+	Vector get_camera();
+	double get_fov();
+
+	void addSphere(const Sphere& sphere);
 
 	Sphere operator[](int i) const;
-
 	Sphere& operator[](int i);
 };
