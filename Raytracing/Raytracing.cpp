@@ -10,12 +10,28 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <random>
+
 #include "Vector.h"
 #include "Ray.h"
 #include "Sphere.h"
 #include "Scene.h"
 
 #include <algorithm>    // std::max
+
+extern std::default_random_engine engine;
+extern std::uniform_real_distribution<double> distrib;
+
+Ray generateRay(Vector camera, double fov, int W, int H, int i, int j) {
+	double r1 = distrib(engine), r2 = distrib(engine);
+	double R = sqrt(-2 * log(r1));
+	double x = R * cos(2 * M_PI * r2) * 0.5;
+	double y = R * sin(2 * M_PI * r2) * 0.5;
+
+	Vector u(j - W / 2. + x - 0.5, H / 2. - i + y - 0.5, -H / (2 * tan(fov / 2))); u.normalize();
+	Ray r(camera, u);
+	return r;
+}
 
 int main() {
 	int W = 512;
@@ -56,14 +72,15 @@ int main() {
 	for (int i = 0; i < H; i++) {
 		for (int j = 0; j < W; j++) {
 
-			Vector u(j - W / 2., H / 2. - i, - H / (2 * tan(scene.get_fov() / 2)));
-			u.normalize();
-			Ray r(scene.get_camera(), u);
+			//Vector u(j - W / 2., H / 2. - i, - H / (2 * tan(scene.get_fov() / 2)));
+			//u.normalize();
+			//Ray r(scene.get_camera(), u);
 
 			int numRebound = 5;
 			Vector color(0., 0., 0.);
 			for (int k = 0; k < nRays; k++)
 			{
+				Ray r = generateRay(scene.get_camera(), scene.get_fov(), W, H, i, j);
 				color += scene.getColor(r, numRebound) / nRays;
 			}
 
