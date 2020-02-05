@@ -52,3 +52,8 @@ double Sphere::get_rayon()
 {
 	return R;
 }
+
+Vector Sphere::get_center()
+{
+	return O;
+}

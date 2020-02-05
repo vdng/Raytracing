@@ -48,12 +48,11 @@ Vector randomCos(const Vector& N) {
 	if (std::abs(N[0]) <= std::abs(N[1]) && std::abs(N[0]) <= std::abs(N[2]))
 		T1 = Vector(0, -N[2], N[1]);
 	else if (std::abs(N[1]) <= std::abs(N[0]) && std::abs(N[1]) <= std::abs(N[2]))
-		T1 = Vector(-N[2], 0, N[1]);
+		T1 = Vector(-N[2], 0, N[0]);
 	else
 		T1 = Vector(-N[1], N[0], 0);
 	T1.normalize();
-	Vector T2 = cross(N, T1);
-	T2.normalize();
+	Vector T2 = cross(N, T1); T2.normalize();
 
 	double r1 = distrib(engine);
 	double r2 = distrib(engine);

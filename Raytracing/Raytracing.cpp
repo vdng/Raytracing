@@ -20,16 +20,12 @@
 int main() {
 	int W = 512;
 	int H = 512;
-	int nRays = 50;
+	int nRays = 100;
 
-	const Vector O;
-	const Vector rho(1., 1., 0.05);
-	double refractiveIndex = 1.5;
-	bool is_mirror = false;
-	bool is_transparent = false;
-	Sphere s1(O, 10., rho, is_mirror, is_transparent, refractiveIndex);
+	Sphere s1(Vector(10., 0., 0.), 10., Vector(1., 1., 0.05), false, false, 1.5);
+	Sphere s2(Vector(-10., 0., 0.), 10., Vector(0.05, 1., 1.), false, true, 1.5);
 
-	Sphere slum(Vector(-10, 20, 40), 2, Vector(1., 1., 1.), false, false);
+	Sphere slum(Vector(-10, 20, 40), 10., Vector(1., 1., 1.), false, false);
 
 	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
 	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
@@ -45,14 +41,14 @@ int main() {
 	scene.addSphere(smur1);
 	scene.addSphere(smur2);
 	scene.addSphere(s1);
+	scene.addSphere(s2);
 
 	scene.set_camera(Vector(0., 0., 55.));
 	scene.set_fov(M_PI / 3.);
 
 	scene.set_light(slum);
-	scene.set_intensiteL(3 * 1e9);
+	scene.set_intensiteL(3* 1e9);
 	scene.set_refractiveIndex(1.);
-	//Scene scene(spheres, C, fov, L, intensiteL, 1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);
 

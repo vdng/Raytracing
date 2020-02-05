@@ -5,7 +5,12 @@
 #include <algorithm>
 #include <random>
 
-Scene::Scene(): intensiteL(3 * 1e9), fov(M_PI / 3.), refractiveIndex(1.), light(Vector(-10, 20, 40), 2, Vector(1., 1., 1.)) {};
+Scene::Scene(): 
+	intensiteL(3 * 1e9), 
+	fov(M_PI / 3.), 
+	refractiveIndex(1.), 
+	light(Vector(-10, 20, 40), 2, Vector(1., 1., 1.)) 
+{};
 
 bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 {
@@ -41,10 +46,11 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 
 	if (has_intersect)
 	{
-		if (idx == 0) 
-		{
-			return light.get_albedo() * intensiteL / (4 * M_PI * light.get_rayon() * light.get_rayon());
-		}
+		// Lumière étendue bruitée
+		//if (idx == 0) 
+		//{
+		//	return light.get_albedo() * intensiteL / (4 * M_PI * light.get_rayon() * light.get_rayon());
+		//}
 
 		if (spheres[idx].is_mirror())
 		{
@@ -81,7 +87,7 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 			// Contribution de l'éclairage directe
 
 			//Vector PL = light - P;
-			//double distlight = PL.getNorm();
+			//double distlight2 = PL.getNorm2();
 			//PL.normalize();
 
 			//Vector P_prime, N_prime;
@@ -90,7 +96,7 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 			//int idx_prime;
 			//bool has_intersect_prime = intersect(r_prime, P_prime, N_prime, idx_prime);
 
-			//if (has_intersect_prime && distlight > (P - P_prime).getNorm())
+			//if (has_intersect_prime && distlight2 > (P - P_prime).getNorm2())
 			//	I = Vector(0,0,0);
 			//else
 			//{
@@ -99,11 +105,31 @@ Vector Scene::getColor(const Ray& r, int numRebound) {
 			//	I = intensiteL / M_PI * spheres[idx].get_albedo() * (std::max(0., dot(N, PL)) / (light - P).getNorm2());
 			//}
 
-			// Contribution indirecte
-			Vector directionAleatoire = randomCos(N);
-			Ray rayonAleatoire(P + 1e-4 * N, directionAleatoire);
+			Vector axeOP = (P - light.get_center()); axeOP.normalize();
+			Vector randomDirection = randomCos(axeOP);
+			Vector randomPoint = randomDirection * light.get_rayon() + light.get_center();
+			Vector wi = (randomPoint - P); wi.normalize();
+			double d_light2 = (randomPoint - P).getNorm2();
 
-			I += getColor(rayonAleatoire, numRebound - 1) * spheres[idx].get_albedo();
+			Ray r_light(P + 1e-4 * N, wi);
+			Vector P_light, N_light;
+			int sphere_idx_light;
+			bool hasIntersectLight = intersect(r_light, P_light, N_light, sphere_idx_light);
+
+			if (hasIntersectLight && d_light2 * 0.99 > (P - P_light).getNorm2())
+			{
+				I = Vector(0., 0., 0.);
+			}
+			else
+			{
+				I = intensiteL / (4 * M_PI * d_light2) * std::max(0., dot(N, wi) / dot(axeOP, randomDirection)) * spheres[idx].get_albedo();
+			}
+
+			// Contribution indirecte
+			randomDirection = randomCos(N);
+			Ray randomRay(P + 1e-4 * N, randomDirection);
+
+			I += getColor(randomRay, numRebound - 1) * spheres[idx].get_albedo();
 
 		}
 	}

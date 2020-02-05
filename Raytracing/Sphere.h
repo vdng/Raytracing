@@ -21,4 +21,5 @@ public:
 	double get_refractiveIndex();
 	Vector get_albedo();
 	double get_rayon();
+	Vector get_center();
 };
