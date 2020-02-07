@@ -22,13 +22,14 @@
 extern std::default_random_engine engine;
 extern std::uniform_real_distribution<double> distrib;
 
-Ray generateRay(Vector camera, double fov, int W, int H, int i, int j) {
+Ray generateRay(Vector camera, double fov, int W, int H, int i, int j, Vector direction, Vector up) {
+	Vector right = cross(direction, up);
 	double r1 = distrib(engine), r2 = distrib(engine);
 	double R = sqrt(-2 * log(r1));
 	double x = R * cos(2 * M_PI * r2) * 0.5;
 	double y = R * sin(2 * M_PI * r2) * 0.5;
 
-	Vector u(j - W / 2. + x - 0.5, H / 2. - i + y - 0.5, -H / (2 * tan(fov / 2))); u.normalize();
+	Vector u((j - W / 2. + x - 0.5) * right + (H / 2. - i + y - 0.5) * up + (H / (2 * tan(fov / 2)) * direction)); u.normalize();
 	Ray r(camera, u);
 	return r;
 }
@@ -62,6 +63,9 @@ int main() {
 	scene.set_camera(Vector(0., 0., 55.));
 	scene.set_fov(M_PI / 3.);
 
+	Vector direction(0., -0.2, -1.2); /*direction.normalize();*/
+	Vector up(0., 1., 0.); /*direction.normalize();*/
+
 	scene.set_light(slum);
 	scene.set_intensiteL(3* 1e9);
 	scene.set_refractiveIndex(1.);
@@ -80,7 +84,7 @@ int main() {
 			Vector color(0., 0., 0.);
 			for (int k = 0; k < nRays; k++)
 			{
-				Ray r = generateRay(scene.get_camera(), scene.get_fov(), W, H, i, j);
+				Ray r = generateRay(scene.get_camera(), scene.get_fov(), W, H, i, j, direction, up);
 				color += scene.getColor(r, numRebound) / nRays;
 			}
 
