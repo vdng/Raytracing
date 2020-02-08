@@ -52,11 +52,11 @@ int main() {
 	double focusDistance = 45.;
 	double aperture = 0.5;
 
-	Sphere s0(Vector(10., 10., 20.), 7., Vector(0.05, 0.05, 0.05), true, false, 1.5);
-	Sphere s1(Vector(0., 5., 10.), 7., Vector(1., 1., 0.05), false, false, 1.5);
-	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), false, true, 1.5);
+	Sphere s0(Vector(10., 10., 20.), 7., Vector(0.05, 0.05, 0.05), SphereType::mirror);
+	Sphere s1(Vector(0., 5., 10.), 7., Vector(1., 1., 0.05), SphereType::normal);
+	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), SphereType::transparent);
 
-	Sphere slum(Vector(-10, 20, 40), 10., Vector(1., 1., 1.), false, false);
+	Sphere slum(Vector(-10, 20, 30), 10., Vector(1., 1., 1.), SphereType::light);
 
 	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
 	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
@@ -64,7 +64,8 @@ int main() {
 	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.));
 	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.));
 
-	Scene scene;
+	double totalIntensity = 1e9;
+	Scene scene(slum, totalIntensity);
 	scene.addSphere(slum);
 	scene.addSphere(splafond);
 	scene.addSphere(smurfond);
@@ -82,8 +83,6 @@ int main() {
 	Vector direction(0., 0, -1.); /*direction.normalize();*/
 	Vector up(0., 1., 0.); /*direction.normalize();*/
 
-	scene.set_light(slum);
-	scene.set_intensiteL(3* 1e9);
 	scene.set_refractiveIndex(1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);

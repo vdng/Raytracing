@@ -4,8 +4,8 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& O, double R, const Vector& rho, bool mirror, bool transparent, double n) : 
-	O(O), R(R), rho(rho), mirror(mirror), transparent(transparent), refractiveIndex(n) {};
+Sphere::Sphere(const Vector& O, double R, const Vector& rho, SphereType sphereType, double n) : 
+	O(O), R(R), rho(rho), sphereType(sphereType), refractiveIndex(n) {};
 
 
 double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
@@ -30,12 +30,9 @@ double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
 	return t;
 }
 
-bool Sphere::is_mirror() {
-	return mirror;
-}
-
-bool Sphere::is_transparent() {
-	return transparent;
+SphereType Sphere::get_sphereType()
+{
+	return sphereType;
 }
 
 double Sphere::get_refractiveIndex()
