@@ -13,10 +13,10 @@ class Scene {
 	double refractiveIndex;
 
 public:
-	Scene();
+	Scene(Sphere light, double totalIntensity);
 
 	bool intersect(const Ray& r, Vector& P, Vector& N, int& idx);
-	Vector getColor(const Ray& r, int numRebound);
+	Vector getColor(const Ray& r, int numRebound, bool showLights = true);
 
 	void set_camera(Vector C);
 	void set_fov(double f);
