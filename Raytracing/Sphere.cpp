@@ -16,7 +16,7 @@ Sphere::Sphere(const Vector& center, double radius, const Vector& albedo,
 {};
 
 
-bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) {
+bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) const {
 	Vector rayDirection = r.get_direction();
 	Vector rayOrigin = r.get_origin();
 
@@ -42,37 +42,37 @@ bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) {
 // Getters
 // =======
 
-SphereType Sphere::get_sphereType()
+SphereType Sphere::get_sphereType() const
 {
 	return sphereType;
 }
 
-double Sphere::get_refractiveIndex()
+double Sphere::get_refractiveIndex() const
 {
 	return refractiveIndex;
 }
 
-Vector Sphere::get_albedo()
+Vector Sphere::get_albedo() const 
 {
 	return albedo;
 }
 
-double Sphere::get_radius()
+double Sphere::get_radius() const
 {
 	return radius;
 }
 
-Vector Sphere::get_center()
+Vector Sphere::get_center() const
 {
 	return center;
 }
 
-double Sphere::get_phongExponent()
+double Sphere::get_phongExponent() const
 {
 	return phongExponent;
 }
 
-double Sphere::get_ks()
+double Sphere::get_ks() const
 {
 	return ks;
 }

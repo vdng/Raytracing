@@ -65,7 +65,7 @@ int main() {
 	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.), SphereType::normal, 0.3);
 
 	double totalIntensity = 1e9;
-	Scene scene(slum, totalIntensity);
+	Scene scene(&slum, totalIntensity);
 	scene.addSphere(slum);
 	scene.addSphere(splafond);
 	scene.addSphere(smurfond);

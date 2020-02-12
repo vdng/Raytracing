@@ -6,30 +6,30 @@
 
 class Scene {
 public:
-	Scene(Sphere light, double totalIntensity);
+	Scene(Sphere* light, double totalIntensity);
 
 	bool intersect(const Ray& r, Vector& P, Vector& N, int& idx);
 	Vector getColor(const Ray& r, int numRebound, bool showLights = true);
 
 	void set_camera(Vector C);
 	void set_fov(double f);
-	void set_light(Sphere L);
+	void set_light(Sphere* L);
 	void set_lightIntensity(double intensity);
 	void set_refractiveIndex(double refraction);
 
-	Vector get_camera();
-	double get_fov();
+	Vector get_camera() const;
+	double get_fov() const;
 
 	void addSphere(const Sphere& sphere);
 
-	Sphere operator[](int i) const;
-	Sphere& operator[](int i);
+	//const Sphere* operator[](int i) const;
+	//const Sphere& operator[](int i);
 
 private:
-	std::vector<Sphere> spheres;
+	std::vector<const Sphere*> spheres;
 	Vector camera;
 	double fov;
-	Sphere light;	// source lumineuse
+	Sphere* light;	// source lumineuse
 	double lightIntensity;	// intensité de la source lumineuse
 	double refractiveIndex;
 

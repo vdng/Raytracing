@@ -8,8 +8,8 @@
 extern std::default_random_engine engine;
 extern std::uniform_real_distribution<double> distrib;
 
-Scene::Scene(Sphere light, double totalIntensity):
-	lightIntensity(totalIntensity * 4. * M_PI / (4 * M_PI * M_PI * light.get_radius() * light.get_radius())),
+Scene::Scene(Sphere* light, double totalIntensity):
+	lightIntensity(totalIntensity * 4. * M_PI / (4 * M_PI * M_PI * light->get_radius() * light->get_radius())),
 	fov(M_PI / 3.), 
 	refractiveIndex(1.), 
 	light(light) 
@@ -23,7 +23,7 @@ bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 	for (size_t i = 0; i < spheres.size(); i++)
 	{
 		double t_local;
-		if (spheres[i].intersect(r, P_local, N_local, t_local))
+		if (spheres[i]->intersect(r, P_local, N_local, t_local))
 		{
 			has_intersect = true;
 			if (t_local < t)
@@ -57,11 +57,11 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 		//	return light.get_albedo() * lightIntensity / (4 * M_PI * light.get_radius() * light.get_radius());
 		//}
 
-		SphereType sphereType = spheres[idx].get_sphereType();
+		SphereType sphereType = spheres[idx]->get_sphereType();
 
 		if (sphereType == SphereType::light)
 		{
-			I = showLights ? (light.get_albedo() * lightIntensity) : Vector(0., 0., 0.);
+			I = showLights ? (light->get_albedo() * lightIntensity) : Vector(0., 0., 0.);
 		}
 
 		else if (sphereType == SphereType::mirror)
@@ -74,7 +74,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 		else if (sphereType == SphereType::transparent)
 		{
 			double n1 = refractiveIndex;
-			double n2 = spheres[idx].get_refractiveIndex();
+			double n2 = spheres[idx]->get_refractiveIndex();
 			Vector N_transparent(N);
 
 			if (dot(rayDirection, N) > 0) // Le rayon sort de la sphère
@@ -97,9 +97,9 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 		else // if (sphereType == SphereType::normal)
 		{	
 			// Contribution de l'éclairage directe
-			Vector axeOP = (P - light.get_center()); axeOP.normalize();
+			Vector axeOP = (P - light->get_center()); axeOP.normalize();
 			Vector randomDirection = randomCos(axeOP);
-			Vector randomPoint = randomDirection * light.get_radius() + light.get_center();
+			Vector randomPoint = randomDirection * light->get_radius() + light->get_center();
 			Vector wi = (randomPoint - P); wi.normalize();
 			double d_light2 = (randomPoint - P).getNorm2();
 
@@ -114,15 +114,15 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 			}
 			else
 			{
-				Vector BRDF = spheres[idx].get_albedo() / M_PI * (1. - spheres[idx].get_ks()) + spheres[idx].get_ks() * phongBRDF(wi, rayDirection, N, spheres[idx].get_phongExponent()) * spheres[idx].get_albedo();
+				Vector BRDF = spheres[idx]->get_albedo() / M_PI * (1. - spheres[idx]->get_ks()) + spheres[idx]->get_ks() * phongBRDF(wi, rayDirection, N, spheres[idx]->get_phongExponent()) * spheres[idx]->get_albedo();
 				double J = 1. * dot(randomDirection, -wi) / d_light2;
-				double proba = dot(axeOP, randomDirection) / (M_PI * light.get_radius() * light.get_radius());
+				double proba = dot(axeOP, randomDirection) / (M_PI * light->get_radius() * light->get_radius());
 				I = lightIntensity * std::max(0., dot(N, wi)) * J * BRDF / proba;
 			}
 
 			// Contribution indirecte
 
-			double p = 1 - spheres[idx].get_ks();
+			double p = 1 - spheres[idx]->get_ks();
 			bool sampleDiffuse;
 			Vector R = rayDirection.reflect(N);
 
@@ -133,20 +133,20 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 			else 
 			{
 				sampleDiffuse = false;
-				randomDirection = randomPhong(rayDirection.reflect(N), spheres[idx].get_phongExponent());
+				randomDirection = randomPhong(rayDirection.reflect(N), spheres[idx]->get_phongExponent());
 				if (dot(randomDirection, N) < 0) return Vector(0., 0., 0.);
 				if (dot(randomDirection, R) < 0) return Vector(0., 0., 0.);
 			}
 
 			Ray randomRay(P + 1e-4 * N, randomDirection);
 
-			double phongProba = (spheres[idx].get_phongExponent() + 1) / M_PI * std::pow(dot(R, randomDirection), spheres[idx].get_phongExponent());
+			double phongProba = (spheres[idx]->get_phongExponent() + 1) / M_PI * std::pow(dot(R, randomDirection), spheres[idx]->get_phongExponent());
 			double proba = p * dot(N, randomDirection) / M_PI + (1. - p) * phongProba;
 
 			if (sampleDiffuse)
-				I += getColor(randomRay, numRebound - 1, false) * spheres[idx].get_albedo() * dot(N, randomDirection) / M_PI / proba;
+				I += getColor(randomRay, numRebound - 1, false) * spheres[idx]->get_albedo() * dot(N, randomDirection) / M_PI / proba;
 			else
-				I += getColor(randomRay, numRebound - 1, false) * dot(N, randomDirection) * phongBRDF(randomDirection, rayDirection, N, spheres[idx].get_phongExponent()) * spheres[idx].get_ks() * spheres[idx].get_albedo() / proba;
+				I += getColor(randomRay, numRebound - 1, false) * dot(N, randomDirection) * phongBRDF(randomDirection, rayDirection, N, spheres[idx]->get_phongExponent()) * spheres[idx]->get_ks() * spheres[idx]->get_albedo() / proba;
 		}
 	}
 	return I;
@@ -167,10 +167,10 @@ void Scene::set_fov(double f)
 
 void Scene::addSphere(const Sphere& sphere)
 {
-	spheres.push_back(sphere);
+	spheres.push_back(&sphere);
 }
 
-void Scene::set_light(Sphere L)
+void Scene::set_light(Sphere* L)
 {
 	light = L;
 }
@@ -189,24 +189,24 @@ void Scene::set_refractiveIndex(double refraction)
 // Getters
 // =======
 
-Vector Scene::get_camera()
+Vector Scene::get_camera() const
 {
 	return camera;
 }
 
-double Scene::get_fov()
+double Scene::get_fov() const
 {
 	return fov;
 }
 
 
-Sphere Scene::operator[](int i) const {
-	return spheres[i];
-}
-
-Sphere& Scene::operator[](int i) {
-	return spheres[i];
-}
+//const Sphere* Scene::operator[](int i) const {
+//	return spheres[i];
+//}
+//
+//const Sphere& Scene::operator[](int i) {
+//	return *spheres[i];
+//}
 
 double Scene::phongBRDF(const Vector& wi, const Vector& wo, const Vector& N, double phongExponent)
 {
