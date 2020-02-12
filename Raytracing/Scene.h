@@ -5,16 +5,6 @@
 #include "Sphere.h"
 
 class Scene {
-private:
-	std::vector<Sphere> spheres;
-	Vector camera;
-	double fov;
-	Sphere light;	// source lumineuse
-	double intensiteL;	// intensité de la source lumineuse
-	double refractiveIndex;
-
-	double phongBRDF(const Vector& wi, const Vector& wo, const Vector& N, double phongExponent);
-
 public:
 	Scene(Sphere light, double totalIntensity);
 
@@ -24,7 +14,7 @@ public:
 	void set_camera(Vector C);
 	void set_fov(double f);
 	void set_light(Sphere L);
-	void set_intensiteL(double intensite);
+	void set_lightIntensity(double intensity);
 	void set_refractiveIndex(double refraction);
 
 	Vector get_camera();
@@ -34,4 +24,14 @@ public:
 
 	Sphere operator[](int i) const;
 	Sphere& operator[](int i);
+
+private:
+	std::vector<Sphere> spheres;
+	Vector camera;
+	double fov;
+	Sphere light;	// source lumineuse
+	double lightIntensity;	// intensité de la source lumineuse
+	double refractiveIndex;
+
+	double phongBRDF(const Vector& wi, const Vector& wo, const Vector& N, double phongExponent);
 };

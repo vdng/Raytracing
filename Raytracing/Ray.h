@@ -4,7 +4,12 @@
 
 class Ray {
 public:
-	Vector C, u;
-	
-	Ray(const Vector& C, Vector u);
+	Ray(const Vector& origin, const Vector& direction);
+
+	Vector get_origin() const;
+	Vector get_direction() const;
+
+private:
+	Vector origin;
+	Vector direction;
 };

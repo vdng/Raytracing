@@ -4,38 +4,43 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& O, double R, const Vector& rho, SphereType sphereType, double ks, double phongExponent, double n) :
-	O(O),
-	R(R),
-	rho(rho),
+Sphere::Sphere(const Vector& center, double radius, const Vector& albedo, 
+	SphereType sphereType, double ks, double phongExponent, double refractiveIndex) :
+	center(center),
+	radius(radius),
+	albedo(albedo),
 	sphereType(sphereType),
 	ks(ks),
 	phongExponent(phongExponent),
-	refractiveIndex(n)
+	refractiveIndex(refractiveIndex)
 {};
 
 
-double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
+bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) {
+	Vector rayDirection = r.get_direction();
+	Vector rayOrigin = r.get_origin();
+
 	double a = 1;
-	double b = 2 * dot(r.u, r.C - O);
-	double c = (r.C - O).getNorm2() - R * R;
+	double b = 2 * dot(rayDirection, rayOrigin - center);
+	double c = (rayOrigin - center).getNorm2() - radius * radius;
 
 	double delta = b * b - 4 * a * c;
-	if (delta < 0) return -1;
+	if (delta < 0) return false;
 
 	double sqrtDelta = sqrt(delta);
 	double t1 = (-b - sqrtDelta) / (2 * a);
 	double t2 = (-b + sqrtDelta) / (2 * a);
+	if (t2 < 0) return false;
 
-	if (t2 < 0) return -1;
-	double t = t1 < 0 ? t2 : t1;
+	t = t1 < 0 ? t2 : t1;
+	P = rayOrigin + t * rayDirection;
+	N = P - center; N.normalize();
 
-	P = r.C + t * r.u;
-	N = P - O;
-	N.normalize();
-
-	return t;
+	return true;
 }
+
+// Getters
+// =======
 
 SphereType Sphere::get_sphereType()
 {
@@ -49,17 +54,17 @@ double Sphere::get_refractiveIndex()
 
 Vector Sphere::get_albedo()
 {
-	return rho;
+	return albedo;
 }
 
-double Sphere::get_rayon()
+double Sphere::get_radius()
 {
-	return R;
+	return radius;
 }
 
 Vector Sphere::get_center()
 {
-	return O;
+	return center;
 }
 
 double Sphere::get_phongExponent()

@@ -24,10 +24,6 @@ double Vector::getNorm2() const {
 	return coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2];
 }
 
-double Vector::getNorm() const {
-	return sqrt(getNorm2());
-}
-
 void Vector::normalize() {
 	double n = sqrt(getNorm2());
 	coords[0] /= n;
@@ -60,8 +56,7 @@ Vector randomCos(const Vector& N) {
 	T1.normalize();
 	Vector T2 = cross(N, T1); T2.normalize();
 
-	double r1 = distrib(engine);
-	double r2 = distrib(engine);
+	double r1 = distrib(engine); double r2 = distrib(engine);
 
 	double x = cos(2 * M_PI * r1) * sqrt(1 - r2);
 	double y = sin(2 * M_PI * r1) * sqrt(1 - r2);
@@ -73,8 +68,7 @@ Vector randomCos(const Vector& N) {
 
 Vector randomPhong(const Vector& R, double phongExponent)
 {
-	double r1 = distrib(engine);
-	double r2 = distrib(engine);
+	double r1 = distrib(engine); double r2 = distrib(engine);
 
 	double z = std::pow(r2, 2 / (phongExponent + 1));
 	double facteur = sqrt(1 - z);

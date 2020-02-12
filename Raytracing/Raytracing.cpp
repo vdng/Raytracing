@@ -47,7 +47,7 @@ Ray generateRay(Vector cameraPosition, double fov, int W, int H, int i, int j, V
 int main() {
 	int W = 512;
 	int H = 512;
-	int nRays = 1000;
+	int nRays = 10;
 	int numRebound = 5;
 	double focusDistance = 45.;
 	double aperture = 0.5;
