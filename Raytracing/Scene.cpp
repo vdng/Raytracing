@@ -5,6 +5,16 @@
 #include <algorithm>
 #include <random>
 
+extern std::default_random_engine engine;
+extern std::uniform_real_distribution<double> distrib;
+
+double Scene::phongBRDF(const Vector& wi, const Vector& wo, const Vector& N, double phongExponent)
+{
+	Vector reflected_wo = wo.reflect(N);
+	double lobe = std::pow(dot(reflected_wo, wi), phongExponent) * (phongExponent + 2) / (2. * M_PI);
+	return lobe;
+}
+
 Scene::Scene(Sphere light, double totalIntensity):
 	intensiteL(totalIntensity * 4. * M_PI / (4 * M_PI * M_PI * light.get_rayon() * light.get_rayon())),
 	fov(M_PI / 3.), 
@@ -61,7 +71,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights) {
 
 		else if (sphereType == SphereType::mirror)
 		{
-			Vector R = r.u - 2 * dot(r.u, N) * N;
+			Vector R = r.u.reflect(N);
 			Ray rray(P + 1e-4 * N, R);
 			I = getColor(rray, numRebound - 1);
 		}
@@ -109,19 +119,38 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights) {
 			}
 			else
 			{
-				//I = intensiteL / (4 * M_PI * d_light2) * std::max(0., dot(N, wi) / dot(axeOP, randomDirection)) * spheres[idx].get_albedo();
-				Vector BRDF = spheres[idx].get_albedo() / M_PI;
+				Vector BRDF = spheres[idx].get_albedo() / M_PI * (1. - spheres[idx].get_ks()) + spheres[idx].get_ks() * phongBRDF(wi, r.u, N, spheres[idx].get_phongExponent()) * spheres[idx].get_albedo();
 				double J = 1. * dot(randomDirection, -wi) / d_light2;
 				double proba = dot(axeOP, randomDirection) / (M_PI * light.get_rayon() * light.get_rayon());
 				I = intensiteL * std::max(0., dot(N, wi)) * J * BRDF / proba;
 			}
 
 			// Contribution indirecte
-			randomDirection = randomCos(N);
+
+			double p = 1 - spheres[idx].get_ks();
+			bool sampleDiffuse;
+			Vector R = r.u.reflect(N);
+
+			if (distrib(engine) < p) {
+				sampleDiffuse = true;
+				randomDirection = randomCos(N);
+			}
+			else {
+				sampleDiffuse = false;
+				randomDirection = randomPhong(r.u.reflect(N), spheres[idx].get_phongExponent());
+				if (dot(randomDirection, N) < 0) return Vector(0., 0., 0.);
+				if (dot(randomDirection, R) < 0) return Vector(0., 0., 0.);
+			}
+
 			Ray randomRay(P + 1e-4 * N, randomDirection);
 
-			I += getColor(randomRay, numRebound - 1, false) * spheres[idx].get_albedo();
+			double phongProba = (spheres[idx].get_phongExponent() + 1) / M_PI * std::pow(dot(R, randomDirection), spheres[idx].get_phongExponent());
+			double proba = p * dot(N, randomDirection) / M_PI + (1. - p) * phongProba;
 
+			if (sampleDiffuse)
+				I += getColor(randomRay, numRebound - 1, false) * spheres[idx].get_albedo() * dot(N, randomDirection) / M_PI / proba;
+			else
+				I += getColor(randomRay, numRebound - 1, false) * dot(N, randomDirection) * phongBRDF(randomDirection, r.u, N, spheres[idx].get_phongExponent()) * spheres[idx].get_ks() * spheres[idx].get_albedo() / proba;
 		}
 	}
 	return I;

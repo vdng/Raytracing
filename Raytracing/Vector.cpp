@@ -43,6 +43,12 @@ Vector& Vector::operator+=(const Vector& B)
 	return *this;
 }
 
+Vector Vector::reflect(const Vector& N) const
+{
+	Vector result = *this - 2. * dot(*this, N) * N;
+	return result;
+}
+
 Vector randomCos(const Vector& N) {
 	Vector T1;
 	if (std::abs(N[0]) <= std::abs(N[1]) && std::abs(N[0]) <= std::abs(N[2]))
@@ -63,6 +69,23 @@ Vector randomCos(const Vector& N) {
 
 	Vector R = x * T1 + y * T2 + z * N;
 	return R;
+}
+
+Vector randomPhong(const Vector& R, double phongExponent)
+{
+	double r1 = distrib(engine);
+	double r2 = distrib(engine);
+
+	double z = std::pow(r2, 2 / (phongExponent + 1));
+	double facteur = sqrt(1 - z);
+	double x = cos(2 * M_PI * r1) * facteur;
+	double y = sin(2 * M_PI * r1) * facteur;
+
+	Vector randomVector(distrib(engine) - 0.5, distrib(engine) - 0.5, distrib(engine) - 0.5);
+	Vector T1 = cross(R, randomVector); T1.normalize();
+	Vector T2 = cross(T1, R);
+
+	return x * T1 + y * T2 + z * R;
 }
 
 Vector operator+(const Vector& A, const Vector& B) {

@@ -4,8 +4,15 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& O, double R, const Vector& rho, SphereType sphereType, double n) : 
-	O(O), R(R), rho(rho), sphereType(sphereType), refractiveIndex(n) {};
+Sphere::Sphere(const Vector& O, double R, const Vector& rho, SphereType sphereType, double ks, double phongExponent, double n) :
+	O(O),
+	R(R),
+	rho(rho),
+	sphereType(sphereType),
+	ks(ks),
+	phongExponent(phongExponent),
+	refractiveIndex(n)
+{};
 
 
 double Sphere::intersect(const Ray& r, Vector& P, Vector& N) {
@@ -53,4 +60,14 @@ double Sphere::get_rayon()
 Vector Sphere::get_center()
 {
 	return O;
+}
+
+double Sphere::get_phongExponent()
+{
+	return phongExponent;
+}
+
+double Sphere::get_ks()
+{
+	return ks;
 }

@@ -5,12 +5,15 @@
 #include "Sphere.h"
 
 class Scene {
+private:
 	std::vector<Sphere> spheres;
 	Vector camera;
 	double fov;
 	Sphere light;	// source lumineuse
 	double intensiteL;	// intensité de la source lumineuse
 	double refractiveIndex;
+
+	double phongBRDF(const Vector& wi, const Vector& wo, const Vector& N, double phongExponent);
 
 public:
 	Scene(Sphere light, double totalIntensity);

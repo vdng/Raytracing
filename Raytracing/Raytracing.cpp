@@ -47,22 +47,22 @@ Ray generateRay(Vector cameraPosition, double fov, int W, int H, int i, int j, V
 int main() {
 	int W = 512;
 	int H = 512;
-	int nRays = 100;
+	int nRays = 1000;
 	int numRebound = 5;
 	double focusDistance = 45.;
 	double aperture = 0.5;
 
-	Sphere s0(Vector(10., 10., 20.), 7., Vector(0.05, 0.05, 0.05), SphereType::mirror);
-	Sphere s1(Vector(0., 5., 10.), 7., Vector(1., 1., 0.05), SphereType::normal);
-	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), SphereType::transparent);
+	Sphere s0(Vector(10., 10., 20.), 7., Vector(1., 1., 1.), SphereType::normal, 0.4, 10);
+	Sphere s1(Vector(0., 5., 10.), 7., Vector(0.05, 0.05, 0.05), SphereType::normal, 0.4, 1000);
+	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), SphereType::transparent, 0.4, 10);
 
 	Sphere slum(Vector(-10, 20, 30), 10., Vector(1., 1., 1.), SphereType::light);
 
-	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.));
-	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5));
-	Sphere ssol(Vector(0., -1000., 0.), 990, Vector(0.1, 0.1, 0.3));
-	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.));
-	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.));
+	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.), SphereType::normal, 0.3);
+	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5), SphereType::normal, 0.3);
+	Sphere ssol(Vector(0., -1000., 0.), 990, Vector(0.1, 0.1, 0.3), SphereType::normal, 0.3);
+	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.), SphereType::normal, 0.3);
+	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.), SphereType::normal, 0.3);
 
 	double totalIntensity = 1e9;
 	Scene scene(slum, totalIntensity);

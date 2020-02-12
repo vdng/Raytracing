@@ -13,6 +13,8 @@ public:
 	double getNorm() const;
 	void normalize();
 	Vector& operator+=(const Vector& B);
+
+	Vector reflect(const Vector& N) const;
 };
 
 Vector operator+(const Vector& A, const Vector& B);
@@ -24,6 +26,7 @@ Vector operator/(const Vector& A, double b);
 Vector operator*(const Vector& A, const Vector& B);
 
 Vector randomCos(const Vector& N);
+Vector randomPhong(const Vector& R, double phongExponent);
 Vector cross(const Vector& A, const Vector& B);
 
 double dot(const Vector& A, const Vector& B);
