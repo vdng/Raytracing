@@ -15,15 +15,26 @@ Scene::Scene(Sphere* light, double totalIntensity):
 	light(light) 
 {};
 
+void Scene::addSphere(const Sphere& sphere)
+{
+	objects.push_back(&sphere);
+}
+
+void Scene::addTriangle(const Triangle& triangle)
+{
+	objects.push_back(&triangle);
+}
+
+
 bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 {
 	bool has_intersect = false;	
 	Vector P_local, N_local;
 	double t = std::numeric_limits<double>::max();
-	for (size_t i = 0; i < spheres.size(); i++)
+	for (size_t i = 0; i < objects.size(); i++)
 	{
 		double t_local;
-		if (spheres[i]->intersect(r, P_local, N_local, t_local))
+		if (objects[i]->intersect(r, P_local, N_local, t_local))
 		{
 			has_intersect = true;
 			if (t_local < t)
@@ -51,30 +62,32 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 
 	if (has_intersect)
 	{
+		const Geometry* currentObject = objects[idx];
+
 		// Lumière étendue bruitée
 		//if (idx == 0) 
 		//{
 		//	return light.get_albedo() * lightIntensity / (4 * M_PI * light.get_radius() * light.get_radius());
 		//}
 
-		SphereType sphereType = spheres[idx]->get_sphereType();
+		Material material = currentObject->get_material();
 
-		if (sphereType == SphereType::light)
+		if (material == Material::light)
 		{
 			I = showLights ? (light->get_albedo() * lightIntensity) : Vector(0., 0., 0.);
 		}
 
-		else if (sphereType == SphereType::mirror)
+		else if (material == Material::mirror)
 		{
 			Vector R = rayDirection.reflect(N);
 			Ray rray(P + 1e-4 * N, R);
 			I = getColor(rray, numRebound - 1);
 		}
 
-		else if (sphereType == SphereType::transparent)
+		else if (material == Material::transparent)
 		{
 			double n1 = refractiveIndex;
-			double n2 = spheres[idx]->get_refractiveIndex();
+			double n2 = currentObject->get_refractiveIndex();
 			Vector N_transparent(N);
 
 			if (dot(rayDirection, N) > 0) // Le rayon sort de la sphère
@@ -94,7 +107,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 			}
 		}
 		
-		else // if (sphereType == SphereType::normal)
+		else // if (material == Material::normal)
 		{	
 			// Contribution de l'éclairage directe
 			Vector axeOP = (P - light->get_center()); axeOP.normalize();
@@ -114,7 +127,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 			}
 			else
 			{
-				Vector BRDF = spheres[idx]->get_albedo() / M_PI * (1. - spheres[idx]->get_ks()) + spheres[idx]->get_ks() * phongBRDF(wi, rayDirection, N, spheres[idx]->get_phongExponent()) * spheres[idx]->get_albedo();
+				Vector BRDF = currentObject->get_albedo() / M_PI * (1. - currentObject->get_ks()) + currentObject->get_ks() * phongBRDF(wi, rayDirection, N, currentObject->get_phongExponent()) * currentObject->get_albedo();
 				double J = 1. * dot(randomDirection, -wi) / d_light2;
 				double proba = dot(axeOP, randomDirection) / (M_PI * light->get_radius() * light->get_radius());
 				I = lightIntensity * std::max(0., dot(N, wi)) * J * BRDF / proba;
@@ -122,7 +135,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 
 			// Contribution indirecte
 
-			double p = 1 - spheres[idx]->get_ks();
+			double p = 1 - currentObject->get_ks();
 			bool sampleDiffuse;
 			Vector R = rayDirection.reflect(N);
 
@@ -131,22 +144,22 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 				randomDirection = randomCos(N);
 			}
 			else 
-			{
+			{ 
 				sampleDiffuse = false;
-				randomDirection = randomPhong(rayDirection.reflect(N), spheres[idx]->get_phongExponent());
+				randomDirection = randomPhong(rayDirection.reflect(N), currentObject->get_phongExponent());
 				if (dot(randomDirection, N) < 0) return Vector(0., 0., 0.);
 				if (dot(randomDirection, R) < 0) return Vector(0., 0., 0.);
 			}
 
 			Ray randomRay(P + 1e-4 * N, randomDirection);
 
-			double phongProba = (spheres[idx]->get_phongExponent() + 1) / M_PI * std::pow(dot(R, randomDirection), spheres[idx]->get_phongExponent());
+			double phongProba = (currentObject->get_phongExponent() + 1) / M_PI * std::pow(dot(R, randomDirection), currentObject->get_phongExponent());
 			double proba = p * dot(N, randomDirection) / M_PI + (1. - p) * phongProba;
 
 			if (sampleDiffuse)
-				I += getColor(randomRay, numRebound - 1, false) * spheres[idx]->get_albedo() * dot(N, randomDirection) / M_PI / proba;
+				I += getColor(randomRay, numRebound - 1, false) * currentObject->get_albedo() * dot(N, randomDirection) / M_PI / proba;
 			else
-				I += getColor(randomRay, numRebound - 1, false) * dot(N, randomDirection) * phongBRDF(randomDirection, rayDirection, N, spheres[idx]->get_phongExponent()) * spheres[idx]->get_ks() * spheres[idx]->get_albedo() / proba;
+				I += getColor(randomRay, numRebound - 1, false) * dot(N, randomDirection) * phongBRDF(randomDirection, rayDirection, N, currentObject->get_phongExponent()) * currentObject->get_ks() * currentObject->get_albedo() / proba;
 		}
 	}
 	return I;
@@ -163,11 +176,6 @@ void Scene::set_camera(Vector C)
 void Scene::set_fov(double f)
 {
 	fov = f;
-}
-
-void Scene::addSphere(const Sphere& sphere)
-{
-	spheres.push_back(&sphere);
 }
 
 void Scene::set_light(Sphere* L)

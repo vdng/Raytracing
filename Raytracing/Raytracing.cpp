@@ -52,40 +52,55 @@ int main() {
 	double focusDistance = 45.;
 	double aperture = 0.5;
 
-	Sphere s0(Vector(10., 10., 20.), 7., Vector(1., 1., 1.), SphereType::normal, 0.4, 10);
-	Sphere s1(Vector(0., 5., 10.), 7., Vector(0.05, 0.05, 0.05), SphereType::normal, 0.4, 1000);
-	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), SphereType::transparent, 0.4, 10);
+	// Objects
+	// =======
 
-	Sphere slum(Vector(-10, 20, 30), 10., Vector(1., 1., 1.), SphereType::light);
+	Sphere sphere_light(Vector(10, 20, 30), 5., Vector(1., 1., 1.), Material::light);
+	double totalIntensity = 3e9;
 
-	Sphere splafond(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.), SphereType::normal, 0.3);
-	Sphere smurfond(Vector(0., 0., -1000.), 940, Vector(0.1, 0., 0.5), SphereType::normal, 0.3);
-	Sphere ssol(Vector(0., -1000., 0.), 990, Vector(0.1, 0.1, 0.3), SphereType::normal, 0.3);
-	Sphere smur1(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.), SphereType::normal, 0.3);
-	Sphere smur2(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.), SphereType::normal, 0.3);
+	// room
+	Sphere sphere_ceil(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.), Material::normal);
+	Sphere sphere_backWall(Vector(0., 0., -1000.), 940, Vector(0.1, 0.8, 0.5), Material::normal);
+	Sphere sphere_floor(Vector(0., -1000., 0.), 990, Vector(0.1, 0.1, 0.3), Material::normal);
+	Sphere sphere_leftWall(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.), Material::normal);
+	Sphere sphere_rightWall(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.), Material::normal);
 
-	double totalIntensity = 1e9;
-	Scene scene(&slum, totalIntensity);
-	scene.addSphere(slum);
-	scene.addSphere(splafond);
-	scene.addSphere(smurfond);
-	scene.addSphere(ssol);
-	scene.addSphere(smur1);
-	scene.addSphere(smur2);
+	// objects in room
+	Sphere s0(Vector(10., 10., 20.), 7., Vector(1., 1., 1.), Material::transparent, 0.4, 10);
+	Sphere s1(Vector(0., 5., 10.), 7., Vector(0.05, 0.05, 0.05), Material::mirror, 0.4, 1000);
+	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), Material::normal, 0.4, 10);
 
-	scene.addSphere(s0);
+	Triangle t0(Vector(-10., -10., 10.), Vector(10., 0., 10.), Vector(-10., 20., 10.), Vector(0.2, 0.8, 0.4), Material::normal);
+
+	// Make scene
+	// ==========
+
+	Scene scene(&sphere_light, totalIntensity);
+	scene.addSphere(sphere_light);
+	scene.addSphere(sphere_ceil);
+	scene.addSphere(sphere_backWall);
+	scene.addSphere(sphere_floor);
+	scene.addSphere(sphere_leftWall);
+	scene.addSphere(sphere_rightWall);
+
+	/*scene.addSphere(s0);
 	scene.addSphere(s1);
-	scene.addSphere(s2);
+	scene.addSphere(s2);*/
+
+	scene.addTriangle(t0);
 
 	scene.set_camera(Vector(0., 0., 55.));
 	scene.set_fov(M_PI / 3.);
 
-	Vector direction(0., 0, -1.); /*direction.normalize();*/
+	Vector direction(0., 0., -1.); /*direction.normalize();*/
 	Vector up(0., 1., 0.); /*direction.normalize();*/
 
 	scene.set_refractiveIndex(1.);
 
 	std::vector<unsigned char> image(W * H * 3, 0);
+
+	// Raytracer
+	// =========
 
 #pragma omp parallel for
 	for (int i = 0; i < H; i++) {
@@ -102,9 +117,9 @@ int main() {
 			image[(i * W + j) * 3 + 0] = std::min(pow(color[0], 0.45), 255.);
 			image[(i * W + j) * 3 + 1] = std::min(pow(color[1], 0.45), 255.);
 			image[(i * W + j) * 3 + 2] = std::min(pow(color[2], 0.45), 255.);
-
 		}
 	}
+
 	stbi_write_png("image.png", W, H, 3, &image[0], 0);
 
 	return 0;

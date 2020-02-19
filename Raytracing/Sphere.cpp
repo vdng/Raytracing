@@ -4,15 +4,11 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& center, double radius, const Vector& albedo, 
-	SphereType sphereType, double ks, double phongExponent, double refractiveIndex) :
+Sphere::Sphere(const Vector& center, double radius, 
+	const Vector& albedo, Material material, double ks, double phongExponent, double refractiveIndex) :
+	Geometry(albedo, material, ks, phongExponent, refractiveIndex),
 	center(center),
-	radius(radius),
-	albedo(albedo),
-	sphereType(sphereType),
-	ks(ks),
-	phongExponent(phongExponent),
-	refractiveIndex(refractiveIndex)
+	radius(radius)
 {};
 
 
@@ -42,21 +38,6 @@ bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) const {
 // Getters
 // =======
 
-SphereType Sphere::get_sphereType() const
-{
-	return sphereType;
-}
-
-double Sphere::get_refractiveIndex() const
-{
-	return refractiveIndex;
-}
-
-Vector Sphere::get_albedo() const 
-{
-	return albedo;
-}
-
 double Sphere::get_radius() const
 {
 	return radius;
@@ -65,14 +46,4 @@ double Sphere::get_radius() const
 Vector Sphere::get_center() const
 {
 	return center;
-}
-
-double Sphere::get_phongExponent() const
-{
-	return phongExponent;
-}
-
-double Sphere::get_ks() const
-{
-	return ks;
 }
