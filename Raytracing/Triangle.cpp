@@ -1,13 +1,15 @@
 #include "Triangle.h"
+#include "Object.h"
 #include <cstdlib>
 
-Triangle::Triangle(const Vector& A, const Vector& B, const Vector& C, 
-	const Vector& albedo, Material material, double ks, double phongExponent, double refractiveIndex) :
-	Geometry(albedo, material, ks, phongExponent, refractiveIndex)
+Triangle::Triangle(
+	const Vector& A, const Vector& B, const Vector& C,
+	const Vector& albedo, Material material, 
+	double ks, double phongExponent, 
+	double refractiveIndex) :
+	Object(albedo, material, ks, phongExponent, refractiveIndex)
 {
-	vertices[0] = A;
-	vertices[1] = B;
-	vertices[2] = C;
+	vertices[0] = A; vertices[1] = B;  vertices[2] = C;
 }
 
 bool Triangle::intersect(const Ray& r, Vector& P, Vector& N, double& t) const
@@ -19,7 +21,7 @@ bool Triangle::intersect(const Ray& r, Vector& P, Vector& N, double& t) const
 
 	double denom = dot(rayDirection, N);
 	if (std::abs(denom) < 1e-12) return false; // rayon parallèle
-	
+
 	t = dot(vertices[2] - rayOrigin, N) / denom;
 	if (t < 0) return false; // Intersection derrière la caméra
 

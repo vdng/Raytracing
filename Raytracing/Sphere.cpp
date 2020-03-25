@@ -4,9 +4,12 @@
 #include <math.h>
 #include <algorithm>
 
-Sphere::Sphere(const Vector& center, double radius, 
-	const Vector& albedo, Material material, double ks, double phongExponent, double refractiveIndex) :
-	Geometry(albedo, material, ks, phongExponent, refractiveIndex),
+Sphere::Sphere(
+	const Vector& center, double radius,
+	const Vector& albedo, Material material,
+	double ks, double phongExponent,
+	double refractiveIndex) :
+	Object(albedo, material, ks, phongExponent, refractiveIndex),
 	center(center),
 	radius(radius)
 {};
@@ -36,8 +39,6 @@ bool Sphere::intersect(const Ray& r, Vector& P, Vector& N, double& t) const {
 }
 
 // Getters
-// =======
-
 double Sphere::get_radius() const
 {
 	return radius;

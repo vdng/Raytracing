@@ -34,10 +34,10 @@ Ray generateRay(Vector cameraPosition, double fov, int W, int H, int i, int j, V
 	double dy_aperture = (distrib(engine) - 0.5) * aperture;
 
 	Vector u((j - W / 2. + dx - 0.5) * right + (H / 2. - i + dy - 0.5) * up + (H / (2 * tan(fov / 2)) * direction)); u.normalize();
-	
+
 	Vector destination = cameraPosition + focusDistance * u;
 	Vector origin = cameraPosition + Vector(dx_aperture, dy_aperture, 0.);
-	
+
 	Vector v = destination - origin; v.normalize();
 
 	Ray r(origin, v);
@@ -47,7 +47,7 @@ Ray generateRay(Vector cameraPosition, double fov, int W, int H, int i, int j, V
 int main() {
 	int W = 512;
 	int H = 512;
-	int nRays = 10;
+	int nRays = 1000;
 	int numRebound = 5;
 	double focusDistance = 45.;
 	double aperture = 0.5;
@@ -57,6 +57,8 @@ int main() {
 
 	Sphere sphere_light(Vector(10, 20, 30), 5., Vector(1., 1., 1.), Material::light);
 	double totalIntensity = 3e9;
+	Scene scene(&sphere_light, totalIntensity);
+	scene.set_refractiveIndex(1.);
 
 	// room
 	Sphere sphere_ceil(Vector(0., 1000., 0.), 940, Vector(0.5, 0.5, 0.), Material::normal);
@@ -65,17 +67,6 @@ int main() {
 	Sphere sphere_leftWall(Vector(-1000., 0., 0.), 940, Vector(0., 1., 0.), Material::normal);
 	Sphere sphere_rightWall(Vector(1000., 0., 0.), 940, Vector(0., 0., 1.), Material::normal);
 
-	// objects in room
-	Sphere s0(Vector(10., 10., 20.), 7., Vector(1., 1., 1.), Material::transparent, 0.4, 10);
-	Sphere s1(Vector(0., 5., 10.), 7., Vector(0.05, 0.05, 0.05), Material::mirror, 0.4, 1000);
-	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), Material::normal, 0.4, 10);
-
-	Triangle t0(Vector(-10., -10., 10.), Vector(10., 0., 10.), Vector(-10., 20., 10.), Vector(0.2, 0.8, 0.4), Material::normal);
-
-	// Make scene
-	// ==========
-
-	Scene scene(&sphere_light, totalIntensity);
 	scene.addSphere(sphere_light);
 	scene.addSphere(sphere_ceil);
 	scene.addSphere(sphere_backWall);
@@ -83,24 +74,30 @@ int main() {
 	scene.addSphere(sphere_leftWall);
 	scene.addSphere(sphere_rightWall);
 
-	/*scene.addSphere(s0);
+	// objects in room
+	Sphere s0(Vector(10., 10., 20.), 7., Vector(1., 1., 1.), Material::transparent, 0.4, 10);
+	Sphere s1(Vector(0., 5., 10.), 7., Vector(0.05, 0.05, 0.05), Material::normal, 0.4, 10);
+	Sphere s2(Vector(-10., 0., 0.), 7., Vector(0.05, 1., 1.), Material::mirror, 0.4, 10);
+	Triangle t0(Vector(-10., -10., 10.), Vector(10., 0., 10.), Vector(-10., 20., 10.), Vector(0.05, 0.05, 0.05), Material::mirror, 0.4, 10);
+	Geometry g0("objects/BeautifulGirl.obj", 1000., Vector(0., 0., 0.));
+
+	scene.addSphere(s0);
 	scene.addSphere(s1);
-	scene.addSphere(s2);*/
+	scene.addSphere(s2);
+	//scene.addTriangle(t0);
+	//scene.addGeometry(g0);
 
-	scene.addTriangle(t0);
-
-	scene.set_camera(Vector(0., 0., 55.));
+	// Camera 
+	scene.set_camera(Vector(10., 0., 45.));
 	scene.set_fov(M_PI / 3.);
 
-	Vector direction(0., 0., -1.); /*direction.normalize();*/
-	Vector up(0., 1., 0.); /*direction.normalize();*/
-
-	scene.set_refractiveIndex(1.);
-
-	std::vector<unsigned char> image(W * H * 3, 0);
+	Vector direction(-.5, 0., -1.); direction.normalize();
+	Vector up(0., 1., 0.); /*up.normalize();*/
 
 	// Raytracer
 	// =========
+
+	std::vector<unsigned char> image(W * H * 3, 0);
 
 #pragma omp parallel for
 	for (int i = 0; i < H; i++) {

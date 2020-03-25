@@ -8,11 +8,11 @@
 extern std::default_random_engine engine;
 extern std::uniform_real_distribution<double> distrib;
 
-Scene::Scene(Sphere* light, double totalIntensity):
+Scene::Scene(Sphere* light, double totalIntensity) :
 	lightIntensity(totalIntensity * 4. * M_PI / (4 * M_PI * M_PI * light->get_radius() * light->get_radius())),
-	fov(M_PI / 3.), 
-	refractiveIndex(1.), 
-	light(light) 
+	fov(M_PI / 3.),
+	refractiveIndex(1.),
+	light(light)
 {};
 
 void Scene::addSphere(const Sphere& sphere)
@@ -25,10 +25,15 @@ void Scene::addTriangle(const Triangle& triangle)
 	objects.push_back(&triangle);
 }
 
+void Scene::addGeometry(const Geometry& geometry)
+{
+	objects.push_back(&geometry);
+}
+
 
 bool Scene::intersect(const Ray& r, Vector& P, Vector& N, int& idx)
 {
-	bool has_intersect = false;	
+	bool has_intersect = false;
 	Vector P_local, N_local;
 	double t = std::numeric_limits<double>::max();
 	for (size_t i = 0; i < objects.size(); i++)
@@ -62,7 +67,7 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 
 	if (has_intersect)
 	{
-		const Geometry* currentObject = objects[idx];
+		const Object* currentObject = objects[idx];
 
 		// Lumière étendue bruitée
 		//if (idx == 0) 
@@ -106,9 +111,9 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 				I = getColor(tray, numRebound - 1);
 			}
 		}
-		
+
 		else // if (material == Material::normal)
-		{	
+		{
 			// Contribution de l'éclairage directe
 			Vector axeOP = (P - light->get_center()); axeOP.normalize();
 			Vector randomDirection = randomCos(axeOP);
@@ -143,8 +148,8 @@ Vector Scene::getColor(const Ray& r, int numRebound, bool showLights)
 				sampleDiffuse = true;
 				randomDirection = randomCos(N);
 			}
-			else 
-			{ 
+			else
+			{
 				sampleDiffuse = false;
 				randomDirection = randomPhong(rayDirection.reflect(N), currentObject->get_phongExponent());
 				if (dot(randomDirection, N) < 0) return Vector(0., 0., 0.);
